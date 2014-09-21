@@ -1,4 +1,4 @@
-  // The 64 LEDs of the 4x4x4x cube are controlled via
+  // The 64 LEDs of the 4x4x4 cube are controlled via
   // an Arduino Uno and its 20 pins.
   // 16 columns and 4 layers.
 const int layer[2] = {A0,A1};
@@ -311,4 +311,3 @@ void fillCube(){
     }
   }
 }
-
