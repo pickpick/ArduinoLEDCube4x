@@ -1,21 +1,30 @@
-  // The 64 LEDs of the 4x4x4 cube are controlled via
+  // This code is for controlling the
+  // 64 LEDs of a 4x4x4 LED cube via
   // an Arduino Uno and its 20 pins.
   // 16 columns and 4 layers.
+  // Main features of this implemenation:
+  // - print characters to your Arduino LED cube
+  // - several font types and font animations  available
+  // - Multiplexing to ensure that a maximum of
+  //   16 LEDs is turned on at any time
+  
+  
+  // Adjust the column and layer numbers below
+  // to the physical connection of your LED cube to your
+  // Arduino pins.
 const int layer[2] = {A0,A1};
 const int column[16]={
   0,1,2,3,4,5,6,7,8,9,10,11,12,13,A4,A5};
-const int DELAY = 5; //Delay between cube top/bottom layer alternations, in milliseconds. 5 seems optimal for 2 layers.
+const int DELAY = 5; //Delay between cube layer alternations, in milliseconds. 
 int cube[4][4][4];
 
 //Setup
 void setup(){
   //Setup Pin-Outputs
-  pinMode(layer[1], OUTPUT);  
-  pinMode(layer[0], OUTPUT);  
-  pinMode(column[1], OUTPUT);  
-  pinMode(column[2], OUTPUT);  
-  pinMode(column[3], OUTPUT);
-  pinMode(column[4], OUTPUT);
+  for (int i=0; i<4;i++)
+  pinMode(layer[i], OUTPUT);  
+  for (int i; i<16; i++)
+  pinMode(column[i], OUTPUT);  
   //Gets Random Seed from Analog Pin
   randomSeed(analogRead(5));
   clearCube();
@@ -41,17 +50,17 @@ void loop(){
 
 void patternBlinkIn(){
   int count, x, y, z;
-  count = 8;
+  count = 64;
   clearCube();
   while(count > 0){
-    x = random(2);
-    y = random(2);
-    z = random(2);
+    x = random(4);
+    y = random(4);
+    z = random(4);
     if(cube[y][x][z]==0){
       cube[y][x][z]=1;
       count--;
-      render(500);
-    }
+      render(100);
+      }
   }
   clearCube();
 }
