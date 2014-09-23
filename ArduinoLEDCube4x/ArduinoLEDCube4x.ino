@@ -1,10 +1,10 @@
 // This code is for controlling the
 // 64 LEDs of a 4x4x4 LED cube via
-// an Arduino Uno and its 20 pins.
-// 16 columns and 4 layers.
+// an Arduino Uno. 
+// 
 // Main features of this implemenation:
-// - print characters to your Arduino LED cube
-// - several font types and font animations  available
+// - prints characters to your Arduino LED cube
+// - several font types and font animations are available
 // - Multiplexing to ensure that a maximum of
 //   16 LEDs is turned on at any time
 //
@@ -14,6 +14,8 @@
 // Adjust the column and layer numbers below
 // to the physical connection of your LED cube to your
 // Arduino pins.
+
+#include Math.h
 
 const int layer[4] = {
   A0,A1,A2,A3};
@@ -35,8 +37,30 @@ void setup(){
   clearCube();
 }
 
+void patternThrowDice(){
+print(random(6));
+}
+
+
+void rotate(int x, int y, int z, double theta){
+int tmp[4][4][4];
+
+for (int i; i<3; i++)
+for (int j=0; j<3; j++)
+for (int k=0;k<3;k++){
+if (l>=0 && l<4 && m>=0 && k <4){
+tmp[i][j][k]=cube[i][j][k];
+}}
+// rotate around the z axis
+ 
+int l = (int) i*Math.Cos(theta) - j* Math.Sin(theta);
+int m = (int) i*Math.Sin(theta) + j*Math.Cos(theta);
+
+}
+
 void loop(){
   patternKnightRider(5);
+  pattenThrowDice();
   fillCube();
   render(1000);
   clearCube();
@@ -348,9 +372,3 @@ void fillCube(){
     }
   }
 }
-
-
-
-
-
-
