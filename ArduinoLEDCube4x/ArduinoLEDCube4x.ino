@@ -4,11 +4,13 @@
 // 
 // Main features of this implemenation:
 // - prints characters to your Arduino LED cube
-// - several font types and font animations are available
+// - own font types can be created with the
+//   the file BitFont_Generator_for_ArduinoLEDCube4x.xls
 // - Multiplexing to ensure that a maximum of
 //   16 LEDs is turned on at any time
 //
-// Instructions for building the 4x4x4 cube:
+// Instructions for building the 4x4x4 cube are 
+// available e.g. here
 // http://www.instructables.com/id/LED-Cube-4x4x4/
 
 // Adjust the column and layer numbers below
@@ -30,112 +32,107 @@ int tmp[4][4][4];
 const int charHeight = 7;
 const int charWidth = 4;
 
-// 7x4 font
+// For creating your own 7x4 font
+// you can use the 
+// the BitFont_Generator_for_ArduinoLEDCube4x.xls
+// and copy the bytes of the characters.
 const byte font[][4] = {
-        0x00, 0x00, 0x00, 0x00,         // Space
-        0x5f, 0x00, 0x00, 0x00,         // !
-        0x03, 0x00, 0x03, 0x00,         // "
-        0x28, 0x7c, 0x28, 0x00,         // #
-        0x2e, 0x6b, 0x3a, 0x00,         // $
-        0x48, 0x20, 0x10, 0x48,         // %
-        0x36, 0x49, 0x26, 0x50,         // &
-        0x03, 0x00, 0x00, 0x00,         // '
-
-        0x1c, 0x22, 0x41, 0x00,         // (
-        0x41, 0x22, 0x1c, 0x00,         // )
-        0x0a, 0x04, 0x0a, 0x00,         // *
-        0x04, 0x0e, 0x04, 0x00,         // +
-        0x60, 0x00, 0x00, 0x00,         // ,
-        0x04, 0x04, 0x04, 0x00,         // -
-        0x40, 0x00, 0x00, 0x00,         // .
-        0x60, 0x18, 0x06, 0x00,         // /
-
-        0x7f, 0x41, 0x7f, 0x00,         // 0
-        0x42, 0x7f, 0x40, 0x00,         // 1
-        0x7d, 0x45, 0x47, 0x00,         // 2
-        0x45, 0x45, 0x7f, 0x00,         // 3
-        0x3f, 0x20, 0x7f, 0x00,         // 4
-        0x47, 0x45, 0x7d, 0x00,         // 5
-        0x7f, 0x45, 0x7d, 0x00,         // 6
-        0x01, 0x01, 0x7f, 0x00,         // 7
-
-        0x7f, 0x45, 0x7f, 0x00,         // 8
-        0x5f, 0x51, 0x7f, 0x00,         // 9
-        0x50, 0x00, 0x00, 0x00,         // :
-        0x68, 0x00, 0x00, 0x00,         // ;
-        0x08, 0x14, 0x22, 0x00,         // <
-        0x14, 0x14, 0x14, 0x00,         // =
-        0x22, 0x14, 0x08, 0x00,         // >
-        0x59, 0x0f, 0x00, 0x00,         // ?
-
-        0x7a, 0x5a, 0x42, 0x7e,         // @
-        0x7f, 0x21, 0x7f, 0x00,         // A
-        0x7f, 0x45, 0x47, 0x7c,         // B
-        0x7f, 0x41, 0x63, 0x00,         // C
-        0x7f, 0x41, 0x41, 0x3e,         // D
-        0x7f, 0x45, 0x45, 0x00,         // E
-        0x7f, 0x05, 0x05, 0x00,         // F
-        0x7f, 0x41, 0x7d, 0x00,         // G
-        0x7f, 0x04, 0x7f, 0x00,         // H
-        0x41, 0x7f, 0x41, 0x00,         // I
-        0x40, 0x41, 0x7f, 0x01,         // J
-        0x7f, 0x04, 0x0a, 0x71,         // K
-        0x7f, 0x40, 0x40, 0x00,         // L
-        0x7f, 0x01, 0x07, 0x7c,         // M
-        0x7f, 0x01, 0x7f, 0x00,         // N
-        0x7f, 0x41, 0x7f, 0x00,         // O
-
-        0x7f, 0x21, 0x3f, 0x00,         // P
-        0x7f, 0x41, 0x21, 0x5f,         // Q
-        0x7f, 0x09, 0x79, 0x4f,         // R
-        0x47, 0x45, 0x7d, 0x00,         // S
-        0x01, 0x7f, 0x01, 0x00,         // T
-        0x7F, 0x40, 0x7f, 0x00,         // U
-        0x7f, 0x20, 0x10, 0x0f,         // V
-        0x7f, 0x40, 0x70, 0x1f,         // W
-        0x7b, 0x0e, 0x7b, 0x00,         // X
-        0x07, 0x7c, 0x07, 0x00,         // Y
-        0x79, 0x45, 0x43, 0x00,         // Z
-        0x7f, 0x41, 0x00, 0x00,         // [
-        0x06, 0x18, 0x60, 0x00,         // "\"
-        0x41, 0x7f, 0x00, 0x00,         // ]
-        0x02, 0x01, 0x02, 0x00,         // ^
-        0x40, 0x40, 0x40, 0x00,         // _
-
-        0x01, 0x02, 0x00, 0x00,         // `
-        0x74, 0x54, 0x7c, 0x00,         // a
-        0x7f, 0x44, 0x7c, 0x00,         // b
-        0x7c, 0x44, 0x44, 0x00,         // c
-        0x7c, 0x44, 0x7f, 0x00,         // d
-        0x7c, 0x54, 0x5c, 0x00,         // e
-        0x04, 0x7f, 0x05, 0x00,         // f
-        0x5c, 0x54, 0x7c, 0x00,         // g
-        0x7f, 0x04, 0x7c, 0x00,         // h
-        0x7d, 0x00, 0x00, 0x00,         // i
-        0x40, 0x7d, 0x00, 0x00,     // j
-        0x7f, 0x10, 0x6c, 0x00,         // k
-        0x7f, 0x40, 0x00, 0x00,         // l
-
-        0x7c, 0x04, 0x1c, 0x70,         // m
-        0x7c, 0x04, 0x7c, 0x00,         // n
-        0x7c, 0x44, 0x7c, 0x00,         // o
-        0x7c, 0x24, 0x3c, 0x00,         // p
-        0x3c, 0x24, 0x7c, 0x00,         // q
-        0x7c, 0x04, 0x04, 0x00,         // r
-        0x5c, 0x54, 0x74, 0x00,         // s
-        0x04, 0x7e, 0x44, 0x00,         // t
-        0x7c, 0x40, 0x7c, 0x00,         // u
-        0x7c, 0x20, 0x1c, 0x00,         // v
-        0x7c, 0x40, 0x70, 0x1c,         // w
-        0x6c, 0x10, 0x6c, 0x00,         // x
-        0x5c, 0x50, 0x7c, 0x00,         // y
-        0x64, 0x54, 0x4c, 0x00,         // z
-
-        0x08, 0x7f, 0x41, 0x00,         // {
-        0x7f, 0x00, 0x00, 0x00,         // |
-        0x41, 0x7f, 0x08, 0x00,         // }
-        0x01, 0x03, 0x02, 0x00,         // ~
-        0x7f, 0x7f, 0x7f, 0x00         // Full Filled
+  0,0,0,0,	//	32	 Space
+  125,0,0,0,	//	33	 !
+  96,0,96,0,	//	34	 "
+  20,127,20,127,	//	35	 #
+  58,107,107,46,	//	36	 $
+  99,100,11,51,	//	37	 %
+  54,73,54,5,	//	38	 &
+  16,96,0,0,	//	39	 '
+  28,34,65,0,	//	40	 (
+  65,34,28,0,	//	41	 )
+  20,56,56,20,	//	42	 *
+  4,14,4,0,	//	43	 +
+  1,6,0,0,	//	44	 ,
+  4,4,4,4,	//	45	 -
+  3,3,0,0,	//	46	 .
+  0,0,0,0,	//	47	 
+  127,65,65,127,	//	48	 0
+  8,16,32,127,	//	49	 1
+  67,69,73,113,	//	50	 2
+  73,73,73,127,	//	51	 3
+  120,8,8,127,	//	52	 4
+  121,73,73,79,	//	53	 5
+  127,73,73,79,	//	54	 6
+  64,72,72,127,	//	55	 7
+  127,73,73,127,	//	56	 8
+  121,73,73,127,	//	57	 9
+  20,0,0,0,	//	58	 :
+  1,22,0,0,	//	59	 ;
+  8,20,34,0,	//	60	 <
+  20,20,20,20,	//	61	 =
+  34,20,8,0,	//	62	 >
+  88,85,85,52,	//	63	 ?
+  30,33,45,61,	//	64	 @
+  127,72,72,127,	//	65	 A
+  127,73,73,54,	//	66	 B
+  62,65,65,65,	//	67	 C
+  127,65,65,62,	//	68	 D
+  127,73,73,73,	//	69	 E
+  127,72,72,72,	//	70	 F
+  62,65,73,78,	//	71	 G
+  127,8,8,127,	//	72	 H
+  65,127,65,0,	//	73	 I
+  66,65,65,126,	//	74	 J
+  127,20,34,65,	//	75	 K
+  127,1,1,1,	//	76	 L
+  127,48,48,127,	//	77	 M
+  127,48,12,127,	//	78	 N
+  62,65,65,62,	//	79	 O
+  127,72,72,48,	//	80	 P
+  62,65,71,63,	//	81	 Q
+  127,76,74,121,	//	82	 R
+  121,73,73,79,	//	83	 S
+  64,127,64,64,	//	84	 T
+  126,1,1,127,	//	85	 U
+  124,3,3,124,	//	86	 V
+  127,14,14,127,	//	87	 W
+  99,28,28,99,	//	88	 X
+  112,12,15,112,	//	89	 Y
+  67,77,89,97,	//	90	 Z
+  127,65,65,0,	//	91	 [
+  96,24,6,1,	//	92	 "\"
+  65,65,127,0,	//	93	 ]
+  24,96,24,0,	//	94	 ^
+  1,1,1,1,	//	95	 _
+  96,16,0,0,	//	96	 `
+  14,17,17,31,	//	97	 a
+  127,17,17,14,	//	98	 b
+  14,17,17,17,	//	99	 c
+  14,17,17,127,	//	100	 d
+  31,21,21,29,	//	101	 e
+  63,72,72,0,	//	102	 f
+  29,21,21,31,	//	103	 g
+  127,8,8,7,	//	104	 h
+  47,1,0,0,	//	105	 i
+  1,47,0,0,	//	106	 j
+  127,4,10,17,	//	107	 k
+  127,1,0,0,	//	108	 l
+  31,15,16,15,	//	109	 m
+  31,16,16,15,	//	110	 n
+  14,17,17,14,	//	111	 o
+  31,20,20,28,	//	112	 p
+  28,20,20,31,	//	113	 q
+  31,16,24,0,	//	114	 r
+  29,21,21,23,	//	115	 s
+  127,25,1,0,	//	116	 t
+  30,1,1,31,	//	117	 u
+  28,3,28,0,	//	118	 v
+  31,7,7,31,	//	119	 w
+  17,14,14,17,	//	120	 x
+  1,29,7,28,	//	121	 y
+  17,19,21,25,	//	122	 z
+  8,54,65,65,	//	123	 {
+  127,0,0,0,	//	124	 |
+  65,65,54,8,	//	125	 }
+  24,16,8,24,	//	126	 ~
+  127,127,127,127,	//	127	 Full Filled
 };
 
 
@@ -154,48 +151,41 @@ void setup(){
 
 
 void loop(){
-  patternKnightRider(5);
-  patternThrowDice();
   fillCube();
   render(1000);
   clearCube();
   render(1000);
-  cube[0][0][0]=1;
-  render(1000);
-  cube[1][0][0]=1;
-  render(1000);
-  cube[2][0][0]=1;
-  render(1000);
-  cube[3][0][0]=1;
-  render(1000);
-  for (int i; i<3; i++)
-    for (int j=0; j<3; j++)
-      for (int k=0;k<3;k++){
-        cube[i][j][k] = random(1);
-      }
-  render(1000);
-  rotate(90);
-  render(1000);
-
   // print each letter of a text string
-  char text[100] = "Hello world!";
-  for (int i=0; i<sizeof(text); i++){
-    print(text[i]);
-    render(500);
- }
+  char text1[26] = "HELLO WORLD! Hello world!";
+  char text2[100] = " !\"#$%&'()*+,-.0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
+  for (int i=0; i<sizeof(text1); i++){
+    print(text1[i]);
+    render(1000);
+    clearCube();
+    render(100);
+  }
+  for (int i=0; i<sizeof(text2); i++){
+    print(text2[i]);
+    render(1000);
+    clearCube();
+    render(100);
+  }
 
-  patternSpiralTopThenBottom(10);  
-  render(1000);
+
+  patternKnightRider(2);
+  clearCube();
+  render(100);
   patternBlinkIn();
   patternBlinkOut();
-  patternSpiralTop(8);
-  patternSpiralBottom(8);
-  patternFacesRandom(30);
-  patternSlashesAlternating(10);
-  patternBlinkCube(30);
-  patternRotateClockwise(20);
+  patternSpiralTop(1);
+  patternSpiralBottom(1);
+  patternSpiralTopThenBottom(2);  
+  render(1000);
   patternRandomLED(20);
-}
+  /*patternThrowDice();
+   rotate(90);
+   render(1000);
+   */}
 
 void print(char ch)
 {
@@ -210,10 +200,10 @@ void print(char ch)
   for (int i=0; i<charWidth; i++) {
     b = font[ch][i];
     // bit shift through the byte and output it to the pin
-    for (int k=0; k<4; k++) 
-     cube[i][0][k] =  !!(b & (1 << k));
-    for (int j=1; j<4; j++)
-     cube[i][j][3] = !!(b & (1 << (3+j)));
+    for (int j=3; j>=0; j--)
+      cube[i][j][3] = !!(b & (1 << (3+j)));
+    for (int k=2; k>=0; k--) 
+      cube[i][0][k] =  !!(b & (1 << k));
   }
 }
 
@@ -252,7 +242,7 @@ void patternBlinkIn(){
     if(cube[x][y][z]==0){
       cube[x][y][z]=1;
       count--;
-      render(500);
+      render(100);
     }
   }
   clearCube();
@@ -269,7 +259,7 @@ void patternBlinkOut(){
     if(cube[x][y][z]==1){
       cube[x][y][z]=0;
       count--;
-      render(500);
+      render(100);
     }
   }
   clearCube();
@@ -319,14 +309,14 @@ void patternSpiralTopThenBottom(int repetitions){
 }
 
 void patternSpiralTop(int repetitions){
-  for (int i=0;i<repetitions;i++){
+  for (int i=0; i<repetitions; i++){
     for (int l=0;l<4;l++){
       for (int k=0;k<4;k++){
         for (int j=0;j<4;j++){
           cube[j][k][l] = 1;
-          render(100);
-          cube[j][k][l] = 0;
-          render(100);
+          render(10);
+          //cube[j][k][l] = 0;
+          //render(100);
         }
       }
     }
@@ -334,106 +324,21 @@ void patternSpiralTop(int repetitions){
 }
 
 void patternSpiralBottom(int repetitions){
-  for (int i=0;i<repetitions;i++){
+  for (int i=0; i<repetitions;i ++){
     for (int l=3;l>=0;l--){
       for (int k=3;k>=0;k--){
         for (int j=3;j>=0;j--){
-          cube[j][k][l] = 1;
-          render(100);
+          //cube[j][k][l] = 1;
+          //render(100);
           cube[j][k][l] = 0;
-          render(1);
+          render(10);
         }
       }
     }
   }
 }
 
-void patternFacesRandom(int repetitions){
-  int i, face;
-  for(i = 0; i<repetitions;i++){
-    face = random(6);
-    switch (face){
-    case 0: //Top
-      {
-        cube[1][0][0] = 1;
-        cube[1][1][0] = 1;
-        cube[1][0][1] = 1;
-        cube[1][1][1] = 1;
-      }
-      break;
-    case 1://Bottom
-      {
-        cube[0][0][0] = 1;
-        cube[0][1][0] = 1;
-        cube[0][0][1] = 1;
-        cube[0][1][1] = 1;
-      }
-      break;
-    case 2://Left
-      {
-        cube[0][0][0] = 1;
-        cube[1][0][0] = 1;
-        cube[0][0][1] = 1;
-        cube[1][0][1] = 1;
-      }
-      break;
-    case 3://Right
-      {
-        cube[0][1][0] = 1;
-        cube[1][1][0] = 1;
-        cube[0][1][1] = 1;
-        cube[1][1][1] = 1;
-      }
-      break;
-    case 4://Front
-      {
-        cube[0][0][1] = 1;
-        cube[0][1][1] = 1;
-        cube[1][0][1] = 1;
-        cube[1][1][1] = 1;
-      }
-      break;
-    case 5://Back
-      {
-        cube[0][1][0] = 1;
-        cube[0][0][0] = 1;
-        cube[1][1][0] = 1;
-        cube[1][0][0] = 1;
-      }
-      break;
-    }
-    render(400);
-    clearCube();
-  }
-}
 
-void patternSlashesAlternating(int repetitions){
-  int i;
-  for(i=0;i<repetitions;i++){
-    cube[0][0][0] = 1;  
-    cube[1][0][0] = 1;
-    cube[0][1][1] = 1;
-    cube[1][1][1] = 1;
-    render(350);
-    clearCube();
-    cube[0][1][0] = 1;  
-    cube[1][1][0] = 1;
-    cube[0][0][1] = 1;
-    cube[1][0][1] = 1;
-    render(350);
-    clearCube();
-  } 
-}
-
-void patternBlinkCube(int repetitions){
-  int i;
-  for(i=0;i<repetitions;i++){
-    fillCube();
-    render(100);
-    clearCube();
-    render(100);
-  } 
-}
 
 void patternRandomLED(int repetitions){
   int i, x, y, z;
@@ -443,29 +348,6 @@ void patternRandomLED(int repetitions){
     z = random(4);
     cube[y][x][z]=1;
     render(250);
-    clearCube();
-  }
-}
-
-void patternRotateClockwise(int repetitions){
-  int i;
-  int speedDelay = 125;
-  for (i = 0;i<repetitions;i++){
-    cube[0][0][0] = 1; 
-    cube[1][0][0] = 1;
-    render(speedDelay);
-    clearCube();
-    cube[0][1][0] = 1; 
-    cube[1][1][0] = 1;
-    render(speedDelay);
-    clearCube();
-    cube[0][1][1] = 1; 
-    cube[1][1][1] = 1;
-    render(speedDelay);
-    clearCube();
-    cube[0][0][1] = 1; 
-    cube[1][0][1] = 1;
-    render(speedDelay);
     clearCube();
   }
 }
@@ -526,6 +408,8 @@ void fillCube(){
     }
   }
 }
+
+
 
 
 
