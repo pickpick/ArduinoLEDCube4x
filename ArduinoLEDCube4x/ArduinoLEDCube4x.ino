@@ -6,8 +6,8 @@
 // - prints characters to your Arduino LED cube
 // - own font types can be created with the
 //   the file BitFont_Generator_for_ArduinoLEDCube4x.xls
-// - Multiplexing to ensure that a maximum of
-//   16 LEDs is turned on at any time
+// - Multiplexing with a maximum of
+//   16 LEDs turned on at any time
 //
 // Instructions for building the 4x4x4 cube are 
 // available e.g. here
@@ -25,6 +25,7 @@ const int layer[4] = {
 const int column[16]={
   0,1,2,3,4,5,6,7,8,9,10,11,12,13,A4,A5};
 const int DELAY = 5; // Delay for multiplexing
+const int CHARDELAY = 100; // speed of printing chars to the font
 int cube[4][4][4];
 int tmp[4][4][4];
 
@@ -147,6 +148,8 @@ void setup(){
   //Gets Random Seed from Analog Pin
   randomSeed(analogRead(5));
   clearCube();
+  //Serial.begin(9600);
+  //Serial.println("output for debugging");
 }
 
 
@@ -158,18 +161,11 @@ void loop(){
   // print each letter of a text string
   char text1[26] = "HELLO WORLD! Hello world!";
   char text2[100] = " !\"#$%&'()*+,-.0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
-  for (int i=0; i<sizeof(text1); i++){
-    print(text1[i]);
-    render(1000);
-    clearCube();
-    render(100);
-  }
-  for (int i=0; i<sizeof(text2); i++){
-    print(text2[i]);
-    render(1000);
-    clearCube();
-    render(100);
-  }
+  int size1 = sizeof(text1);
+  print(text1, size1);
+  int size2 = sizeof(text1);
+  printChar(text1, size1);
+  printChar(text2, size2);
 
 
   patternKnightRider(2);
@@ -187,26 +183,85 @@ void loop(){
    render(1000);
    */}
 
-void print(char ch)
-{
-  byte b;
-  // make sure the character is within the alphabet bounds (defined by the font.h file)
-  // if it's not, make it a blank character
-  if (ch < 32 || ch > 126)
-    ch = 32;
-  // converts the ASCII number to the font index number
-  ch -= 32;
-  // step through each byte of the character array
-  for (int i=0; i<charWidth; i++) {
-    b = font[ch][i];
-    // bit shift through the byte and output it to the pin
-    for (int j=3; j>=0; j--)
-      cube[i][j][3] = !!(b & (1 << (3+j)));
-    for (int k=2; k>=0; k--) 
-      cube[i][0][k] =  !!(b & (1 << k));
+void printChar(char chars[], int size)
+{ 
+  for (int p=0; p<size; p++){
+    char ch = chars[p];
+    // print char by char
+    byte b;
+    // make sure the character is within the alphabet bounds
+    // if it's not, make it a blank character
+    if (ch < 32 || ch > 126)
+      ch = 32;
+    // converts the ASCII number to the font index number
+    ch -= 32;
+    // step through each byte of the character array
+    for (int i=0; i<charWidth; i++) {
+      b = font[ch][i];
+      // bit shift through the byte and output it to the pin
+      for (int j=3; j>=0; j--)
+        cube[i][j][3] = !!(b & (1 << (3+j)));
+      for (int k=2; k>=0; k--) 
+        cube[i][0][k] =  !!(b & (1 << k));
+    }
+    render(1000);
+    clearCube();
+    render(100);
+  }
+
+}
+
+
+void print(char chars[], int size)
+{ // have chars floating form right to left
+  for (int p=0; p<size; p++){
+    char ch = chars[p];
+    byte b;
+    // make sure the character is within the alphabet bounds
+    // if it's not, make it a blank character
+    if (ch < 32 || ch > 126)
+      ch = 32;
+    // converts the ASCII number to the font index number
+    ch -= 32;
+
+    // shift current status of LEDs two columns to the left
+    // in order to have two blank space between the chars
+    for (int p=0; p<2; p++){
+      printMoveLeft();
+      // turn last column off to have space between chars
+      for (int j=3; j>=0; j--) 
+        cube[3][j][3] = 0;
+      for (int k=2; k>=0; k--) 
+        cube[3][0][k] = 0 ;
+      render(CHARDELAY);
+    }
+    
+    // step through each of the 4 bytes of the character array
+    for (int i=0; i<charWidth; i++) {
+      printMoveLeft();
+      b = font[ch][i];
+      // bit shift through the byte and output it to the pin
+      for (int j=3; j>=0; j--)
+        cube[3][j][3] = !!(b & (1 << (3+j)));
+      for (int k=2; k>=0; k--) 
+        cube[3][0][k] =  !!(b & (1 << k));
+      render(CHARDELAY);
+    }  
+    render(1000);
   }
 }
 
+void printMoveLeft(){ // used for shifting chars on the cube one column to the left
+  //char tmp[] = "C";
+  //printChar(tmp,1);
+  for (int m=0; m<3; m++){
+    for (int j=3; j>=0; j--) //copy top LED status one step to the left
+      cube[m][j][3] = cube[m+1][j][3];
+    for (int k=2; k>=0; k--) //copy front LED status one step to the left
+      cube[m][0][k] = cube[m+1][0][k] ;
+  }
+  render(CHARDELAY);
+}
 
 void patternThrowDice(){
   //print(random(6));
@@ -315,8 +370,6 @@ void patternSpiralTop(int repetitions){
         for (int j=0;j<4;j++){
           cube[j][k][l] = 1;
           render(10);
-          //cube[j][k][l] = 0;
-          //render(100);
         }
       }
     }
@@ -328,8 +381,6 @@ void patternSpiralBottom(int repetitions){
     for (int l=3;l>=0;l--){
       for (int k=3;k>=0;k--){
         for (int j=3;j>=0;j--){
-          //cube[j][k][l] = 1;
-          //render(100);
           cube[j][k][l] = 0;
           render(10);
         }
@@ -337,8 +388,6 @@ void patternSpiralBottom(int repetitions){
     }
   }
 }
-
-
 
 void patternRandomLED(int repetitions){
   int i, x, y, z;
@@ -408,6 +457,18 @@ void fillCube(){
     }
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
