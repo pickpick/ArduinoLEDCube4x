@@ -2,14 +2,14 @@
 // 64 LEDs of a 4x4x4 LED cube via
 // an Arduino Uno. 
 // 
-// Main features of this implemenation:
+// Main features of this implementation:
 // - prints characters to your Arduino LED cube
 // - own font types can be created with the
-//   the file BitFont_Generator_for_ArduinoLEDCube4x.xls
+//   file BitFont_Generator_for_ArduinoLEDCube4x.xls
 // - Multiplexing with a maximum of
 //   16 LEDs turned on at any time
 //
-// Instructions for building the 4x4x4 cube are 
+// Instructions for building a 4x4x4 LED cube are 
 // available e.g. here
 // http://www.instructables.com/id/LED-Cube-4x4x4/
 
@@ -158,14 +158,17 @@ void loop(){
   render(1000);
   clearCube();
   render(1000);
+  patternBlinkIn();
+  patternBlinkOut();
   // print each letter of a text string
   char text1[14] = "HELLO! Hello!";
   char text2[100] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~ !\"#$%&'()*+,-.0123456789:;<=>?@";
   int size1 = sizeof(text1);
+  int size2 = sizeof(text2);
+  //print(text2, size2);
   printChar(text1, size1);
   print(text1, size1);
   printRandom(text1, size1);
-  int size2 = sizeof(text1);
   print(text2, size2);
 
   patternKnightRider(2);
@@ -340,11 +343,12 @@ void patternThrowDice(){
  */
 
 void rotate(double theta){
-  for (int i; i<3; i++)
+//this function needs some debugging
+for (int i; i<3; i++)
     for (int j=0; j<3; j++)
       for (int k=0;k<3;k++){
-        int l = (int) (0.5 +i*cos(theta) - j*sin(theta));
-        int m = (int) (0.5 +i*sin(theta) + j*cos(theta));
+        int l = (0.5 +i*cos(theta) - j*sin(theta));
+        int m = (0.5 +i*sin(theta) + j*cos(theta));
         if (l>=0 && l<4 && m>=0 && k <4){
           tmp[l][m][k]=cube[i][j][k];
           // rotate around the z axis
@@ -368,10 +372,9 @@ void patternBlinkIn(){
     if(cube[x][y][z]==0){
       cube[x][y][z]=1;
       count--;
-      render(100);
+      render(20);
     }
   }
-  clearCube();
 }
 
 void patternBlinkOut(){
@@ -385,7 +388,7 @@ void patternBlinkOut(){
     if(cube[x][y][z]==1){
       cube[x][y][z]=0;
       count--;
-      render(100);
+      render(20);
     }
   }
   clearCube();
