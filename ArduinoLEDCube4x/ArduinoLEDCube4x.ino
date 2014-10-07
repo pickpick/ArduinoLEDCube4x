@@ -25,7 +25,7 @@ const int layer[4] = {
 const int column[16]={
   0,1,2,3,4,5,6,7,8,9,10,11,12,13,A4,A5};
 const int DELAY = 5; // Delay for multiplexing
-const int CHARDELAY = 100; // speed of printing chars to the font
+const int SCROLLDELAY = 100; // speed of scrolling chars
 int cube[4][4][4];
 int tmp[4][4][4];
 
@@ -100,7 +100,7 @@ const byte font[][4] = {
   127,65,65,0,	//	91	 [
   96,24,6,1,	//	92	 "\"
   65,65,127,0,	//	93	 ]
-  24,96,24,0,	//	94	 ^
+  32,64,32,0,	//	94	 ^
   1,1,1,1,	//	95	 _
   96,16,0,0,	//	96	 `
   14,17,17,31,	//	97	 a
@@ -115,16 +115,16 @@ const byte font[][4] = {
   1,47,0,0,	//	106	 j
   127,4,10,17,	//	107	 k
   127,1,0,0,	//	108	 l
-  31,15,16,15,	//	109	 m
-  31,16,16,15,	//	110	 n
+  15,8,15,7,	//	109	 m
+  15,8,7,0,	//	110	 n
   14,17,17,14,	//	111	 o
-  31,20,20,28,	//	112	 p
-  28,20,20,31,	//	113	 q
+  31,20,28,0,	//	112	 p
+  0,28,20,31,	//	113	 q
   31,16,24,0,	//	114	 r
   29,21,21,23,	//	115	 s
   127,25,1,0,	//	116	 t
   30,1,1,31,	//	117	 u
-  28,3,28,0,	//	118	 v
+  28,3,2,28,	//	118	 v
   31,7,7,31,	//	119	 w
   17,14,14,17,	//	120	 x
   1,29,7,28,	//	121	 y
@@ -165,11 +165,11 @@ void loop(){
   char text2[100] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~ !\"#$%&'()*+,-.0123456789:;<=>?@";
   int size1 = sizeof(text1);
   int size2 = sizeof(text2);
-  //print(text2, size2);
+  printUpward(text1, size1);
   printChar(text1, size1);
-  print(text1, size1);
+  printLeftward(text1, size1);
   printRandom(text1, size1);
-  print(text2, size2);
+  printLeftward(text2, size2);
 
   patternKnightRider(2);
   clearCube();
@@ -181,9 +181,27 @@ void loop(){
   patternSpiralTopThenBottom(2);  
   render(1000);
   patternRandomLED(20);
+
+  cube[0][0][0] = 1;
+  cube[1][1][1] = 1;
+  cube[1][1][0] = 1;
+  cube[2][2][0] = 1;
+  cube[2][2][1] = 1;
+  cube[2][2][2] = 1;
+  cube[3][3][0] = 1;
+  cube[3][3][1] = 1;
+  cube[3][3][2] = 1;
+  cube[3][3][3] = 1;
+  cube[3][2][0] = 1;
+  cube[3][1][0] = 1;
+  for (int i=0; i<=8; i++){
+    rotateZAxis(90.0/360.0*2.0*PI);
+    render(1000);
+  }
+
   /*
   patternThrowDice();
-   rotate(90);
+   rotateZAxis(90);
    render(1000);
    */
 }
@@ -216,7 +234,37 @@ void printChar(char chars[], int size)
 }
 
 
-void print(char chars[], int size)
+void printUpward(char chars[], int size)
+{ // have chars floating upwards
+  for (int p=0; p<size; p++){
+    char ch = chars[p];
+    byte b[4];
+    if (ch < 32 || ch > 126)
+      ch = 32;
+    // converts the ASCII number to the font index number
+    ch -= 32;
+
+    // shift current status of LEDs two rows upwards
+    // in order to have two blank rows between chars
+    printMoveUp();
+    printMoveUp();
+    // step through each of the 7 rows of the character array
+    for (int i=0; i<charWidth; i++)
+      b[i] = font[ch][i];
+    for (int j=charHeight-1; j>=0; j--) {
+      printMoveUp();
+      for (int i=0; i<charWidth; i++)
+        // shift row by row through the char 
+        // and output 4 bits of each row to the bottom 
+        cube[i][0][0] =  !!(b[i] & (1 << j));
+      render(SCROLLDELAY); 
+    } 
+    render(1000);
+  }
+}
+
+
+void printLeftward(char chars[], int size)
 { // have chars floating form right to left
   for (int p=0; p<size; p++){
     char ch = chars[p];
@@ -244,7 +292,7 @@ void print(char chars[], int size)
       for (int k=0; k<3; k++) 
         cube[3][3][k] =  !!(b & (1 << k));
 
-      render(CHARDELAY); // render right side
+      render(SCROLLDELAY); // render right side
     }
 
     // step through each of the 4 bytes of the character array
@@ -268,11 +316,26 @@ void print(char chars[], int size)
         cube[3][j][3] = !!(b & (1 << (3+j)));
       for (int k=2; k>=0; k--) 
         cube[3][0][k] =  !!(b & (1 << k));
-      render(CHARDELAY); // render right side, front and left side
+      render(SCROLLDELAY); // render right side, front and left side
     }  
     render(1000);
   }
 }
+
+void printMoveUp(){ // used for shifting chars on the cube one row upwards
+  for (int j=3; j>0; j--) // move rows on top side
+    for (int k=0; k<=3; k++) 
+      cube[k][j][3] = cube[k][j-1][3] ;
+
+  for (int j=3; j>0; j--){
+    for (int m=0; m<=3; m++) // move rows on front side
+      cube[m][0][j] = cube[m][0][j-1];
+  }
+  for (int m=0; m<=3; m++) // turn off bottom LEDs on front side
+    cube[m][0][0] = 0;
+  render(SCROLLDELAY);
+}
+
 
 void printMoveLeft(){ // used for shifting chars on the cube one column to the left
   //copy LED status on the left side of the cube one step to the left
@@ -292,7 +355,7 @@ void printMoveLeft(){ // used for shifting chars on the cube one column to the l
     for (int k=0; k<3; k++) 
       cube[3][j][k] = cube[3][j+1][k] ; 
 
-  render(CHARDELAY);
+  render(SCROLLDELAY);
   for (int k=0; k<3; k++)  // most right LED is off on right side
     cube[3][3][k] = 0; 
   for (int k=0; k<4; k++)  // most right LED is off on top side
@@ -338,25 +401,23 @@ void printRandom(char chars[], int size)
 
 /*
 void patternThrowDice(){
- print(1+random(6),1);
+ printLeftward(1+random(6),1);
  }
  */
 
-void rotate(double theta){
-//this function needs some debugging
-for (int i; i<3; i++)
-    for (int j=0; j<3; j++)
-      for (int k=0;k<3;k++){
-        int l = (0.5 +i*cos(theta) - j*sin(theta));
-        int m = (0.5 +i*sin(theta) + j*cos(theta));
-        if (l>=0 && l<4 && m>=0 && k <4){
-          tmp[l][m][k]=cube[i][j][k];
-          // rotate around the z axis
-        }
+void rotateZAxis(double theta){
+  // rotate around the z axis
+  //this function needs some debugging
+  for (int i=0; i<=3; i++)
+    for (int j=0; j<=3; j++)
+      for (int k=0; k<=3; k++){
+        int l = (int)(0.5 +1.5 +(double(i)-1.5)*cos(theta) - ((double)(j)-1.5)*sin(theta));
+        int m = (int)(0.5 +1.5 +(double(i)-1.5)*sin(theta) + ((double)(j)-1.5)*cos(theta));
+        tmp[l][m][k]=cube[i][j][k];
       }
-  for (int i=0; i<3; i++)
-    for (int j=0; j<3; j++)
-      for (int k=0; k<3; k++){
+  for (int i=0; i<=3; i++)
+    for (int j=0; j<=3; j++)
+      for (int k=0; k<=3; k++){
         cube[i][j][k]=tmp[i][j][k];
       }
 }
@@ -531,6 +592,13 @@ void fillCube(){
     }
   }
 }
+
+
+
+
+
+
+
 
 
 
