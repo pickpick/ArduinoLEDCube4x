@@ -17,7 +17,9 @@
 // to the physical connection of your LED cube to your
 // Arduino pins.
 
-//#include "font.h"
+// There is also a library LEDCube and an example sketch
+// using the library available
+
 #include <math.h>
 
 const int layer[4] = {
@@ -103,7 +105,7 @@ const byte font[][4] = {
   32,64,32,0,	//	94	 ^
   1,1,1,1,	//	95	 _
   96,16,0,0,	//	96	 `
-  14,17,17,31,	//	97	 a
+  7,21,21,15,	//	97	 a
   127,17,17,14,	//	98	 b
   14,17,17,17,	//	99	 c
   14,17,17,127,	//	100	 d
@@ -140,9 +142,9 @@ const byte font[][4] = {
 //Setup
 void setup(){
   //Setup Pin-Outputs
-  for (int i=0; i<4;i++)
+  for (int i=0; i<sizeof(layer);i++)
     pinMode(layer[i], OUTPUT);  
-  for (int i=0; i<16; i++)
+  for (int i=0; i<sizeof(column); i++)
     pinMode(column[i], OUTPUT);
 
   //Gets Random Seed from Analog Pin
@@ -161,16 +163,16 @@ void loop(){
   patternBlinkIn();
   patternBlinkOut();
   // print each letter of a text string
-  char text1[14] = "HELLO! Hello!";
-  char text2[100] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~ !\"#$%&'()*+,-.0123456789:;<=>?@";
-  int size1 = sizeof(text1);
-  int size2 = sizeof(text2);
-  printUpward(text1, size1);
-  printChar(text1, size1);
-  printLeftward(text1, size1);
-  printRandom(text1, size1);
-  printLeftward(text2, size2);
+  String str1 = "ABCabc";
+  String text1 = "_-= HELLO! Hello!";
+  String text2 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~ !\"#$%&'()*+,-.0123456789:;<=>?@";
+  printChar(str1);
+  printUpward(text1);
+  printLeftward(text1);
+  printRandom(text1);
+  printLeftward(text2);
 
+  clearCube();
   patternKnightRider(2);
   clearCube();
   render(100);
@@ -206,10 +208,10 @@ void loop(){
    */
 }
 
-void printChar(char chars[], int size)
+void printChar(String chars)
 { 
-  for (int p=0; p<size; p++){
-    char ch = chars[p];
+  for (int p=0; p<chars.length(); p++){
+    char ch = chars.charAt(p);
     // print char by char
     byte b;
     // If the character is not within the alphabet bounds
@@ -234,10 +236,10 @@ void printChar(char chars[], int size)
 }
 
 
-void printUpward(char chars[], int size)
+void printUpward(String chars)
 { // have chars floating upwards
-  for (int p=0; p<size; p++){
-    char ch = chars[p];
+  for (int p=0; p<chars.length(); p++){
+    char ch = chars.charAt(p);
     byte b[4];
     if (ch < 32 || ch > 126)
       ch = 32;
@@ -264,10 +266,10 @@ void printUpward(char chars[], int size)
 }
 
 
-void printLeftward(char chars[], int size)
+void printLeftward(String chars)
 { // have chars floating form right to left
-  for (int p=0; p<size; p++){
-    char ch = chars[p];
+  for (int p=0; p<chars.length(); p++){
+    char ch = chars.charAt(p);
     byte b;
     byte bRight; 
     // If the character is not within the alphabet bounds
@@ -362,16 +364,16 @@ void printMoveLeft(){ // used for shifting chars on the cube one column to the l
     cube[3][k][3] = 0; 
 }
 
-void printRandom(char chars[], int size)
+void printRandom(String chars)
 { // pixels of each char turn randomly
   int count, x, z;
   byte b;
-  for (int p=0; p<size; p++){
+  for (int p=0; p<chars.length(); p++){
     count = 64;
     clearCube();
     render(100);
 
-    char ch = chars[p];
+    char ch = chars.charAt(p);
     if (ch < 32 || ch > 126)
       ch = 32;
     ch -= 32;
